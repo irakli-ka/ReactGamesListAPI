@@ -1,0 +1,6 @@
+@ReactGamesListAPI_HostAddress = http://localhost:5285
+
+GET {{ReactGamesListAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
