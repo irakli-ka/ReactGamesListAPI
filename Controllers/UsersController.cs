@@ -18,43 +18,49 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
     private readonly IMapper _mapper = mapper;
 
     [HttpPost("signup")]
-    public async Task<ActionResult> SignUp(string username, string password)
+    public async Task<ActionResult> SignUp([FromBody] CreateUserDto dto)
     {
-        if (await _repository.GetUserByUsernameAsync(username)  != null)
+        if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest("username and password are required");
+
+        if (await _repository.GetUserByUsernameAsync(dto.Username) != null)
             return BadRequest("Username already taken");
 
         var hasher = new PasswordHasher<User>();
         var user = new User
         {
-            Username = username,
+            Username = dto.Username,
             Password = ""
         };
-        
-        user.Password = hasher.HashPassword(user, password);
+
+        user.Password = hasher.HashPassword(user, dto.Password);
         await _repository.AddUserAsync(user);
-        
+
         return Ok();
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult> Login(string username, string password)
+    public async Task<ActionResult> Login([FromBody] CreateUserDto dto)
     {
-        var user  = await _repository.GetUserByUsernameAsync(username);
+        if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest("invalid username or password");
+
+        var user = await _repository.GetUserByUsernameAsync(dto.Username);
         if (user == null)
-            return BadRequest("invalid username or  password");
-       
+            return BadRequest("invalid username or password");
+
         var hasher = new PasswordHasher<User>();
-        var result = hasher.VerifyHashedPassword(user, user.Password, password);
-        
+        var result = hasher.VerifyHashedPassword(user, user.Password, dto.Password);
+
         if (result == PasswordVerificationResult.Failed)
-            return BadRequest("invalid username or  password");
+            return BadRequest("invalid username or password");
 
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
         };
-        
+
         var claimsIdentity = new ClaimsIdentity(claims, "ApplicationCookie");
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
