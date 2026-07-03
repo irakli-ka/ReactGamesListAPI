@@ -6,7 +6,7 @@ A ASP.NET Core Web API for managing users and games with cookie-based authentica
 
 ReactGamesListAPI is a backend service that allows users to create accounts, authenticate, and manage a personal list of games. The API uses cookie-based authentication to protect user-specific operations.
 
-Related project [Games Library](https://github.com/irakli-ka/React_App-Games_Library/tree/additional-backend-implementation) usees this API.
+Related project [Games Library](https://github.com/irakli-ka/React_App-Games_Library/tree/additional-backend-implementation) uses this API.
 
 ## Features
 
