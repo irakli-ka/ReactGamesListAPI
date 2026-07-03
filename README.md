@@ -27,7 +27,7 @@ Related project [Games Library](https://github.com/irakli-ka/React_App-Games_Lib
 - **Data Mapping**: AutoMapper
 - **Password Hashing**: ASP.NET Identity PasswordHasher
 - **Containerization**: Docker & Docker Compose
-- **API Documentation**: Swagger/OpenAPI
+- **API Documentation**: Swagger
 
 ## Authentication
 
