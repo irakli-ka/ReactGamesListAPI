@@ -9,33 +9,30 @@ namespace ReactGamesListAPI.Controllers;
 [ApiController]
 public class GamesController(IGameRepo repository, IMapper mapper) : ControllerBase
 {
-    private readonly IGameRepo _repository = repository;
-    private readonly IMapper _mapper =  mapper;
-
     [HttpGet]
     public async Task<IActionResult> GetAllGames()
     {
-        var games = await  _repository.GetAllGamesAsync();
+        var games = await  repository.GetAllGamesAsync();
         
-        return Ok(_mapper.Map<IEnumerable<ReadGameDto>>(games));
+        return Ok(mapper.Map<IEnumerable<ReadGameDto>>(games));
         
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGameById(int id)
     {
-        var game = await _repository.GetGameByIdAsync(id);
+        var game = await repository.GetGameByIdAsync(id);
         if  (game == null)
             return NotFound();
         
-        return Ok(_mapper.Map<ReadGameDto>(game));
+        return Ok(mapper.Map<ReadGameDto>(game));
     }
 
     [HttpGet("username/{username}")]
     public async Task<IActionResult> GetGameByUsername(string username)
     {
-        var games = await _repository.GetGamesByUsername(username);
-        return Ok(_mapper.Map<IEnumerable<ReadGameDto>>(games));
+        var games = await repository.GetGamesByUsername(username);
+        return Ok(mapper.Map<IEnumerable<ReadGameDto>>(games));
     }
     
 }

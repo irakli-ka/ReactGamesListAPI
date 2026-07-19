@@ -14,8 +14,6 @@ namespace ReactGamesListAPI.Controllers;
 [ApiController]
 public class UsersController(IUserRepo repository, IMapper mapper) : ControllerBase
 {
-    private readonly IUserRepo _repository = repository;
-    private readonly IMapper _mapper = mapper;
 
     [HttpPost("signup")]
     public async Task<ActionResult> SignUp([FromBody] CreateUserDto dto)
@@ -23,7 +21,7 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
             return BadRequest("username and password are required");
 
-        if (await _repository.GetUserByUsernameAsync(dto.Username) != null)
+        if (await repository.GetUserByUsernameAsync(dto.Username) != null)
             return BadRequest("Username already taken");
 
         var hasher = new PasswordHasher<User>();
@@ -34,7 +32,7 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         };
 
         user.Password = hasher.HashPassword(user, dto.Password);
-        await _repository.AddUserAsync(user);
+        await repository.AddUserAsync(user);
 
         return Ok();
     }
@@ -45,7 +43,7 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
             return BadRequest("invalid username or password");
 
-        var user = await _repository.GetUserByUsernameAsync(dto.Username);
+        var user = await repository.GetUserByUsernameAsync(dto.Username);
         if (user == null)
             return BadRequest("invalid username or password");
 
@@ -65,7 +63,7 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
 
-        return Ok(_mapper.Map<ReadUserDto>(user));
+        return Ok(mapper.Map<ReadUserDto>(user));
     }
 
     [HttpPost("logout")]
@@ -91,11 +89,11 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         if (claimUserId == null || claimUserName == null)
             return Unauthorized();
 
-        var user = await _repository.GetUserByIdAsync(int.Parse(claimUserId));
+        var user = await repository.GetUserByIdAsync(int.Parse(claimUserId));
         if (user == null)
             return Unauthorized();
 
-        return Ok(_mapper.Map<ReadUserDto>(user));
+        return Ok(mapper.Map<ReadUserDto>(user));
     }
 
     [HttpDelete]
@@ -108,39 +106,39 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         if (claimUserId == null || claimUserName == null)
             return Unauthorized();
         
-        var user = await _repository.GetUserByIdAsync(int.Parse(claimUserId));
+        var user = await repository.GetUserByIdAsync(int.Parse(claimUserId));
 
         if (user == null || user.Username != claimUserName)
             return Unauthorized();
     
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        await _repository.DeleteUserAsync(int.Parse(claimUserId));
+        await repository.DeleteUserAsync(int.Parse(claimUserId));
         return Ok();
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ReadUserDto>>> GetAllUsers()
     {
-        var users = await _repository.GetAllUsersAsync();
-        return Ok(_mapper.Map<IEnumerable<ReadUserDto>>(users));
+        var users = await repository.GetAllUsersAsync();
+        return Ok(mapper.Map<IEnumerable<ReadUserDto>>(users));
     }
 
     [HttpGet("id/{id}")]
     public async Task<ActionResult<ReadUserDto>> GetUserById(int id)
     {
-        var user = await _repository.GetUserByIdAsync(id);
+        var user = await repository.GetUserByIdAsync(id);
         if (user == null)
             return NotFound($"User with id {id} not found");
-        return Ok(_mapper.Map<ReadUserDto>(user));
+        return Ok(mapper.Map<ReadUserDto>(user));
     }
 
     [HttpGet("username/{username}")]
     public async Task<ActionResult<ReadUserDto>> GetUserByUsername(string username)
     {
-        var user = await _repository.GetUserByUsernameAsync(username);
+        var user = await repository.GetUserByUsernameAsync(username);
         if (user == null)
             return NotFound($"User with username {username} not found");
-        return Ok(_mapper.Map<ReadUserDto>(user));
+        return Ok(mapper.Map<ReadUserDto>(user));
     }
 
     [HttpPost("games")]
@@ -151,8 +149,8 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         if (claimUserId == null)
             return Unauthorized();
         
-        var game  = _mapper.Map<Game>(gameDto);
-        await _repository.AddGameToUserList(int.Parse(claimUserId), game);
+        var game  = mapper.Map<Game>(gameDto);
+        await repository.AddGameToUserList(int.Parse(claimUserId), game);
         return Ok();
     }
     
@@ -164,7 +162,7 @@ public class UsersController(IUserRepo repository, IMapper mapper) : ControllerB
         if (claimUserId == null)
             return Unauthorized();
         
-        await _repository.RemoveGameFromUserList(int.Parse(claimUserId), gameId);
+        await repository.RemoveGameFromUserList(int.Parse(claimUserId), gameId);
         return Ok();
     }
 }
